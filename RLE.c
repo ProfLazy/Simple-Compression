@@ -52,6 +52,71 @@ void compressString(const char *input, RepeatedChar *output, int *size) {
     *size = index; 
 }
 
+// Decompress String via the compressed format
+void decompressString(char *compressedString, char *uncompressedString) {
+
+    // Compressed String is in the format of (#,char)
+    // Count the amount of characters in the compressed string
+    int count = 0;
+    char* ptr = compressedString;
+
+    RepeatedChar temp[1000]; // Assuming the compressed string will not exceed 1000 characters
+    int currNumber;
+    char currCharacter;
+
+    // Number of different characters
+    int numChars = 0;
+
+    // Debug print compressed string
+    // printf("Compressed String in Decompressing: %s\n", compressedString);
+
+    int index = 0;
+
+    while (*ptr != '\0') {
+
+        sscanf(ptr, "(%d,%c)", &currNumber, &currCharacter);
+
+        count += currNumber;
+
+        // debug count
+        // printf("\n");
+        // printf("Current count: %d, %c\n", currNumber, currCharacter);
+
+        temp[index].count = currNumber;
+        temp[index].character = currCharacter;
+        index++;
+
+        while (*ptr != ')') {
+            ptr++;
+        } 
+        
+        ptr++;
+        numChars++;
+    }
+
+    // Debug print size
+    // printf("Size of uncompressed string: %d\n", count);
+
+    // debug number of different characters
+    // printf("Number of different characters: %d\n", numChars);
+
+    // Decompress the string based on the count and character
+
+    char *originalUncompressedString = uncompressedString; // Keep a pointer to the start of the uncompressed string
+
+    for(int i = 0; i < numChars; i++) {
+        for (int j = 0; j < temp[i].count; j++) {
+            *uncompressedString = temp[i].character;
+            uncompressedString++;
+        }
+    }
+
+    *uncompressedString = '\0'; // Null-terminate the uncompressed string
+    // Debug print uncompressed string
+    printf("Uncompressed String: %s\n", originalUncompressedString);
+
+}
+
 int main() {
     const char *input = "AAABBBCCDDEEEFGGGAA";
     RepeatedChar output[100]; // Assuming the output will not exceed 100 characters
@@ -64,9 +129,25 @@ int main() {
 
     // Print the compressed string
     printf("Compressed String: ");
+    char compressedString[1000]; // Assuming the compressed string will not exceed 1000 characters
+    int pos = 0;
     for (int i = 0; i < size; i++) {
         printf("(%d,%c)", output[i].count, output[i].character);
+
+        // Build the compressed string for decompression
+        pos += sprintf(compressedString + pos, "(%d,%c)", output[i].count, output[i].character);
+
     }
+
+    // Print new line
+    printf("\n");
+
+    compressedString[pos] = '\0'; // Null-terminate the compressed string
+
+    // Debug decompression
+    char decompressedString[1000]; // Assuming the uncompressed string will not exceed 1000 characters
+    decompressString(compressedString, decompressedString);
+
     printf("\n");
     printf("\n");
     printf("\n");
@@ -92,12 +173,23 @@ int main() {
     int randomBinarySize;
     compressString((const char*)randomBinaryInput, randomBinaryOutput, &randomBinarySize);
 
+    // Hold the compressed random binary string in a char array for decompression
+    char compressedRandomBinaryString[1000];
+    pos = 0;
+
     // Print the compressed random binary string
     printf("Compressed Random Binary String: ");
     for (int i = 0; i < randomBinarySize; i++) {
         printf("(%d,%c)", randomBinaryOutput[i].count, randomBinaryOutput[i].character);
+
+        // Build the compressed random binary string for decompression
+        pos += sprintf(compressedRandomBinaryString + pos, "(%d,%c)", randomBinaryOutput[i].count, randomBinaryOutput[i].character);
     }
     printf("\n");
+
+    // Decompress the compressed random binary string
+    char decompressedRandomBinary[1000];
+    decompressString(compressedRandomBinaryString, decompressedRandomBinary);
 
     return 0;
 }
